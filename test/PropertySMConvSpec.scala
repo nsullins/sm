@@ -1,4 +1,5 @@
 import org.specs2.mutable._
+import models._
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,6 +14,7 @@ class PropertySMConvSpec extends Specification {
 
     "return None when null or empty string is passed" in{
 
+      PropertySMConv.convertMongoToSolrJson(null) must_== None
     }
   }
 
