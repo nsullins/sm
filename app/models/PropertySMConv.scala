@@ -28,29 +28,55 @@ object PropertySMConv {
     }.getOrElse(JsNull)
   }
 
+  def extractStringValueFromTopLevelJsElement(elementToExtract: String, solrElementName: String)(json: JsValue): JsValue = {
+    JsExtensions.buildJsObject(
+      __ \ solrElementName -> (__ \ elementToExtract)(json).headOption.getOrElse(JsNull)
+    )
+  }
+
+  def convertFloorplan(floorplan: JsValue): JsValue = {
+    //create transformer and apply to Json here.
+    JsNull
+  }
+
   def loopOnFPOrUnitElement(json: JsValue): List[JsValue] = {
 
     val addressOpt = convertAddress((__ \ "address")(json))
-    val shortDescription = (__ \ "shortDescription")(json)
-    val latitude = (__ \ "latitude")(json)
-    val longitude = (__ \ "longitude")(json)
-    val propertyKey = (__ \ "propertyKey")(json)
-    val parkingType = (__ \ "parkingType")(json)
-    val structureType = (__ \ "structureType")(json)
-
-
-
-
-
+    val shortDescription = extractStringValueFromTopLevelJsElement("shortDescription", "PropertyShortDescription")(json)
 
     val floorplans = (__ \ "floorplans")(json)
+
+
     Nil
   }
 }
 
+//val latitude = (__ \ "latitude")(json)
+//val longitude = (__ \ "longitude")(json)
+//val propertyKey = (__ \ "propertyKey")(json)
+//val parkingType = (__ \ "parkingType")(json)
+//val structureType = (__ \ "structureType")(json)
 
 
-//    First re-read the mandubian blog to understand the API better
-//    1) The floorplans will be the root loop element
-//    2) This method will need to reformat the floorplans json to the Solr format
-//    3) Get it to work and then look into refactoring.
+//TODO 1) convert to futures
+//TODO 2) validate input Json with reads validator
+//TODO 3) use macros?
+//TODO 4) refactor iterate
+
+//TODO 5) Gather requirements for changes to Mongo Result
+//        a) Need to include Unit level data
+//        b) Possibly add is_display flag to result
+//        c) depending on strategy we should probably include all data and provide details about display status. Perhaps this should be an authenticated request?
+
+
+/*
+Links referenced
+
+http://www.playframework.com/documentation/2.1.1/ScalaJson
+http://www.playframework.com/documentation/2.1.1/ScalaJsonCombinators
+http://www.playframework.com/documentation/2.1.1/ScalaJsonTransformers
+http://www.playframework.com/documentation/2.1.1/ScalaJsonInception
+http://www.playframework.com/documentation/2.1.1/ScalaJsonRequests
+http://stackoverflow.com/questions/17596809/how-to-merge-a-jsvalue-to-jsobject-in-flat-level
+
+ */
