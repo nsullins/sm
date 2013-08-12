@@ -34,6 +34,20 @@ object PropertySMConv {
     )
   }
 
+  def floorplanTransformer = (
+    (__ \ 'MinRent).json.update(
+      __.read[JsString].map{range => JsString(splitRentRange(formatRentRangeVal(range.value)).head)}
+    )andThen
+    (__ \ 'MaxRent).json.update(
+      __.read[JsString].map{range => JsString(splitRentRange(formatRentRangeVal(range.value)).last)}
+    )
+
+  )
+
+  def formatRentRangeVal(rentRange: String): String = rentRange.replaceAll("$", "").replaceAll(",", "")
+
+  def splitRentRange(formattedRentRange: String): Seq[String] = formattedRentRange.split("-")
+
   def convertFloorplan(floorplan: JsValue): JsValue = {
     //create transformer and apply to Json here.
     JsNull
