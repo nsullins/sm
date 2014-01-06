@@ -1,7 +1,7 @@
 package models
 
 import play.api.libs.json._
-import play.api.libs.json.extensions.JsExtensions
+//import play.api.libs.json.extensions.JsExtensions
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,7 +17,7 @@ object PropertySMConv {
 
   def convertAddress(address: List[JsValue]): JsValue = {
     address.headOption.map{addJs =>
-      JsExtensions.buildJsObject(
+      extensions.JsExtensions.buildJsObject(
         __ \ "PropertyAddress1" -> (__ \ "address" \ "address1")(addJs).headOption.getOrElse(JsNull),
         __ \ "PropertyAddress2" -> (__ \ "address" \ "address2")(addJs).headOption.getOrElse(JsNull),
         __ \ "PropertyCity" -> (__ \ "address" \ "cityname")(addJs).headOption.getOrElse(JsNull),
@@ -29,38 +29,37 @@ object PropertySMConv {
   }
 
   def extractStringValueFromTopLevelJsElement(elementToExtract: String, solrElementName: String)(json: JsValue): JsValue = {
-    JsExtensions.buildJsObject(
+    extensions.JsExtensions.buildJsObject(
       __ \ solrElementName -> (__ \ elementToExtract)(json).headOption.getOrElse(JsNull)
     )
   }
 
   def floorplanTransformer = (
-    (__ \ 'MinRent).json.update(
+    (__ \ 'MinRent).json.copyFrom((__ \ 'rentRange))update(
       __.read[JsString].map{range => JsString(splitRentRange(formatRentRangeVal(range.value)).head)}
     )andThen
     (__ \ 'MaxRent).json.update(
       __.read[JsString].map{range => JsString(splitRentRange(formatRentRangeVal(range.value)).last)}
-    )
-
+    )//andThen
+//    (__ \ '
+//      __.read[JsString]
+//    )
   )
 
   def formatRentRangeVal(rentRange: String): String = rentRange.replaceAll("$", "").replaceAll(",", "")
 
   def splitRentRange(formattedRentRange: String): Seq[String] = formattedRentRange.split("-")
 
-  def convertFloorplan(floorplan: JsValue): JsValue = {
-    //create transformer and apply to Json here.
-    JsNull
+  def convertFloorplan(floorplan: JsValue): JsResult[JsObject] = {
+    println("floorplan jsvalue is: " + floorplan)
+    floorplan.transform(floorplanTransformer)
   }
 
   def loopOnFPOrUnitElement(json: JsValue): List[JsValue] = {
 
     val addressOpt = convertAddress((__ \ "address")(json))
     val shortDescription = extractStringValueFromTopLevelJsElement("shortDescription", "PropertyShortDescription")(json)
-
     val floorplans = (__ \ "floorplans")(json)
-
-
     Nil
   }
 }
